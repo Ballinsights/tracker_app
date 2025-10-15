@@ -522,7 +522,26 @@ with col_stats:
         with dl_col:
             team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
 
-            export_dir = f"../data_preprocessing/raw_data/{team_name}"
+
+            raw_data_path = "../data_preprocessing/raw_data"
+            gameids = [f for f in os.listdir(raw_data_path) if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
+            gameids = [int(f) for f in gameids]
+
+            
+            if gameids:
+                gameid = max(gameids) + 1
+            else:
+                gameid = 1  # start at 001
+
+            # Format gameid as 3 digits (e.g. '001')
+            gameid = f"{gameid:03d}"
+
+
+            os.makedirs(f'../data_preprocessing/raw_data/{gameid}', exist_ok=True)
+
+
+
+            export_dir = f"../data_preprocessing/raw_data/{gameid}/{team_name}"
             os.makedirs(export_dir, exist_ok=True)
 
             # Create a file path inside that folder
