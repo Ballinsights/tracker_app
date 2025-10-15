@@ -528,22 +528,30 @@ with col_stats:
                 gameids = [int(f) for f in gameids]
 
                 if gameids:
-                    gameid = max(gameids) + 1
+                    latest_gameid = max(gameids)
+                    latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
+
+                    # Count how many team folders exist inside latest game id
+                    team_folders = [f for f in os.listdir(latest_game_dir) if os.path.isdir(os.path.join(latest_game_dir, f))]
+
+                    if len(team_folders) >= 2:
+                        # both teams already exported, increment
+                        gameid = latest_gameid + 1
+                    else:
+                        # still one or zero team folders, reuse same game id
+                        gameid = latest_gameid
                 else:
                     gameid = 1
 
                 gameid = f"{gameid:03d}"
-
-                team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
                 export_dir = f"{raw_data_path}/{gameid}/{team_name}"
                 os.makedirs(export_dir, exist_ok=True)
 
                 file_path = os.path.join(export_dir, "game_stats.csv")
-
-                file_path = os.path.join(export_dir, "game_stats.csv")
-
                 df.to_csv(file_path, index=False, encoding="utf-8")
+
                 st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
+
 
     else:
         st.info("No stats logged yet.")
