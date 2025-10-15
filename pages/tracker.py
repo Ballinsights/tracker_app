@@ -339,12 +339,7 @@ with col_quarter:
             padding-left: 0 !important;
             padding-right: 0 !important;
         }
-        div.stButton > button {
-            width: 100% !important;
-            font-size: 14px !important;
-            padding: 0.5rem 0.8rem !important;
-            margin: 0 !important;
-        }
+        
         </style>
     """
     st.markdown(q_button_style, unsafe_allow_html=True)
