@@ -522,33 +522,26 @@ with col_stats:
         with dl_col:
             team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
 
-
-            raw_data_path = "../data_preprocessing/raw_data"
-            gameids = [f for f in os.listdir(raw_data_path) if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
-            gameids = [int(f) for f in gameids]
-
-            
-            if gameids:
-                gameid = max(gameids) + 1
-            else:
-                gameid = 1  # start at 001
-
-            # Format gameid as 3 digits (e.g. '001')
-            gameid = f"{gameid:03d}"
-
-
-            os.makedirs(f'../data_preprocessing/raw_data/{gameid}', exist_ok=True)
-
-
-
-            export_dir = f"../data_preprocessing/raw_data/{gameid}/{team_name}"
-            os.makedirs(export_dir, exist_ok=True)
-
-            # Create a file path inside that folder
-            
-            file_path = os.path.join(export_dir, "game_stats.csv")
-
             if st.button("💾 Export CSV to Local Folder"):
+                raw_data_path = "../data_preprocessing/raw_data"
+                gameids = [f for f in os.listdir(raw_data_path) if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
+                gameids = [int(f) for f in gameids]
+
+                if gameids:
+                    gameid = max(gameids) + 1
+                else:
+                    gameid = 1
+
+                gameid = f"{gameid:03d}"
+
+                team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
+                export_dir = f"{raw_data_path}/{gameid}/{team_name}"
+                os.makedirs(export_dir, exist_ok=True)
+
+                file_path = os.path.join(export_dir, "game_stats.csv")
+
+                file_path = os.path.join(export_dir, "game_stats.csv")
+
                 df.to_csv(file_path, index=False, encoding="utf-8")
                 st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
 
