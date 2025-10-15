@@ -8,6 +8,12 @@ if "roster" not in st.session_state:
     st.session_state.roster = []
 if "setup_done" not in st.session_state:
     st.session_state.setup_done = False
+if "team_name" not in st.session_state:
+    st.session_state.team_name = ""
+
+# Input: Team name
+st.subheader("Team Information")
+team_name = st.text_input("Enter Team Name", value=st.session_state.team_name)
 
 # Input: number of players
 num_players = st.number_input("How many players?", min_value=1, max_value=20, value=10)
@@ -26,9 +32,10 @@ for i in range(num_players):
 # Save roster
 if st.button("✅ Start Game"):
     if roster:
+        st.session_state.team_name = team_name.strip()
         st.session_state.roster = roster
         st.session_state.players = [p["number"] for p in roster]  # keep only numbers list
         st.session_state.setup_done = True
-        st.success("Roster saved! 👉 Go to the **Tracker** page from the sidebar.")
+        st.success(f"Roster for **{team_name or 'Unnamed Team'}** saved! 👉 Go to the **Tracker** page from the sidebar.")
     else:
         st.warning("Please enter at least one player number.")

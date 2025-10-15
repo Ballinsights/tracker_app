@@ -2,12 +2,17 @@ import streamlit as st
 import pandas as pd
 import time
 from streamlit_autorefresh import st_autorefresh
+import os
 
 
 # --- Require setup before access ---
 if "setup_done" not in st.session_state or not st.session_state.setup_done:
     st.warning("⚠️ Please set up the roster first on the Home page.")
     st.stop()
+
+# --- Retrieve team name ---
+team_name = st.session_state.get("team_name", "Unnamed Team")
+
 
 
 # --- Wide layout + big buttons CSS ---
@@ -515,13 +520,19 @@ with col_stats:
                 st.session_state.stats.pop()
                 st.rerun()
         with dl_col:
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="⬇️ Download",
-                data=csv,
-                file_name="game_stats.csv",
-                mime="text/csv",
-            )
+            team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
+
+            export_dir = f"../data_preprocessing/raw_data/{team_name}"
+            os.makedirs(export_dir, exist_ok=True)
+
+            # Create a file path inside that folder
+            
+            file_path = os.path.join(export_dir, "game_stats.csv")
+
+            if st.button("💾 Export CSV to Local Folder"):
+                df.to_csv(file_path, index=False, encoding="utf-8")
+                st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
+
     else:
         st.info("No stats logged yet.")
 
