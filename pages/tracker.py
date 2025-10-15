@@ -23,7 +23,8 @@ st.markdown("""
     div.stButton > button {
         font-size: 30px !important;
         height: 80px !important;
-        width: 120px !important;
+        width: 100px !important;
+        margin: 10px !important;
     }
     /* Zone selection alert styling */
     .zone-alert {
@@ -184,6 +185,21 @@ minutes, seconds = divmod(int(elapsed), 60)
 current_game_time = f"{minutes:02d}:{seconds:02d}"
 st.session_state.current_game_time = current_game_time
 
+# --- Calculate total score ---
+if "stats" in st.session_state and st.session_state.stats:
+    df = pd.DataFrame(st.session_state.stats, columns=["Player", "Action", "Time", "Quarter"])
+
+    # Count made shots
+    df["PTS"] = 0
+    df.loc[df["Action"].str.startswith("2PT"), "PTS"] = 2
+    df.loc[df["Action"].str.startswith("3PT"), "PTS"] = 3
+    df.loc[df["Action"].str.startswith("FT"), "PTS"] = 1
+
+    total_score = int(df["PTS"].sum())
+else:
+    total_score = 0
+
+
 # === TIMER + QUARTER SIDE BY SIDE ===
 col_timer, col_quarter = st.columns([2, 1])
 
@@ -215,7 +231,18 @@ with col_timer:
     #reset-btn {{ background-color: #6c757d; }}
     </style>
 
+    <div style="display:flex; align-items:center; gap:20px;">
     <div id="clock">⏱ {minutes:02d}:{seconds:02d}</div>
+    <div id="score" style="
+        font-size: 50px;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 10px;
+    ">
+        Score: {total_score}
+    </div>
+</div>
+
     <div>
         <button id="start-btn" class="clock-btn">▶️ Start</button>
         <button id="stop-btn" class="clock-btn">⏸ Pause</button>
@@ -272,7 +299,7 @@ with col_timer:
     updateClock();
     if (running) timer = setInterval(updateClock, 1000);
     </script>
-    """, height=100, width=300)
+    """, height=100, width=600)
 
     colA, colB, colC = st.columns([0.45,0.45,1.5], gap="small")
 
@@ -292,21 +319,21 @@ button_style = """
 st.markdown(button_style, unsafe_allow_html=True)
 
 with colA:
-    if st.button("▶️ Start / Resume", key="start"):
+    if st.button("Start Clock", key="start"):
         if not st.session_state.clock_running:
             st.session_state.clock_running = True
             st.session_state.start_time = time.time()
         st.rerun()
 
 with colB:
-    if st.button("⏸ Pause", key="pause"):
+    if st.button("Pause", key="pause"):
         if st.session_state.clock_running:
             st.session_state.elapsed += time.time() - st.session_state.start_time
             st.session_state.clock_running = False
         st.rerun()
 
 with colC:
-    if st.button("🔄 Reset", key="reset"):
+    if st.button("Reset", key="reset"):
         st.session_state.clock_running = False
         st.session_state.elapsed = 0
         st.session_state.start_time = None
@@ -314,6 +341,22 @@ with colC:
 
 
 with col_quarter:
+    st.markdown(
+        """
+        <style>
+        .quarter-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            padding-top: 35px;  /* adjust this to fine-tune alignment */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown("<div class='quarter-box'>", unsafe_allow_html=True)
     # --- Determine label ---
     if st.session_state.quarter <= 4:
         quarter_label = f"Quarter {st.session_state.quarter}"
@@ -396,7 +439,7 @@ with col_quarter:
 
 
 # Three main columns: Players | Actions | Logged Stats
-col_players, col_actions, col_stats = st.columns([1, 2, 1], gap="small")
+col_players, col_actions, col_stats = st.columns([1, 3, 2], gap="small")
 
 # --- Players on Court ---
 with col_players:
