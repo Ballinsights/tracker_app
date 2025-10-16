@@ -442,6 +442,25 @@ with col_quarter:
             st.session_state.previous_elapsed = 0
             st.rerun()
 
+        # --- End Quarter Button ---
+    with q_col3:
+        if st.button("🏁 End Quarter", key="end_quarter"):
+            # Get current time from game clock
+            current_time = st.session_state.get("current_game_time", "00:00")
+            current_quarter = f"Q{st.session_state.quarter}"
+
+            # Log the "END" action
+            st.session_state.stats.append(["NA", "END", current_time, current_quarter])
+            st.success(f"✅ Logged quarter end: {current_quarter} at {current_time}")
+
+            # Pause clock for consistency
+            if st.session_state.clock_running:
+                st.session_state.elapsed += time.time() - st.session_state.start_time
+                st.session_state.clock_running = False
+
+            st.rerun()
+
+
 
 # Three main columns: Players | Actions | Logged Stats
 col_players, col_actions, col_stats = st.columns([1, 3, 2], gap="small")
