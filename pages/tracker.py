@@ -60,7 +60,6 @@ st.markdown("""
 
 st.set_page_config(layout='wide')
 
-
 # --- Zone categories ---
 zones_2pt = [
     "Restricted Area",
@@ -413,9 +412,26 @@ with col_quarter:
             st.session_state.start_time = None
 
             st.rerun()
+            
+    with q_col2:
+            if st.button("🏁 End Quarter", key="end_quarter"):
+                # Get current time from game clock
+                current_time = st.session_state.get("current_game_time", "00:00")
+                current_quarter = f"Q{st.session_state.quarter}"
+
+                # Log the "END" action
+                st.session_state.stats.append(["NA", "END", current_time, current_quarter])
+                st.success(f"✅ Logged quarter end: {current_quarter} at {current_time}")
+
+                # Pause clock for consistency
+                if st.session_state.clock_running:
+                    st.session_state.elapsed += time.time() - st.session_state.start_time
+                    st.session_state.clock_running = False
+
+                st.rerun()
 
     # --- Undo Quarter ---
-    with q_col2:
+    with q_col3:
         if st.button("↩️ Undo Quarter", key="undo_q", disabled=not st.session_state.previous_quarter):
             if st.session_state.previous_quarter:
                 st.session_state.quarter = st.session_state.previous_quarter
@@ -427,38 +443,23 @@ with col_quarter:
                 st.rerun()
 
     # --- Reset Game ---
-    with q_col3:
-        if st.button("🔄 Reset Game", key="reset_game"):
-            st.session_state.quarter = 1
-            st.session_state.max_quarters = 4
-            st.session_state.stats = []
-            st.session_state.starters = []
-            st.session_state.players = []
-            st.session_state.clock_running = False
-            st.session_state.elapsed = 0
-            st.session_state.start_time = None
-            st.session_state.pending_action = None
-            st.session_state.previous_quarter = None
-            st.session_state.previous_elapsed = 0
-            st.rerun()
+   #with q_col3:
+    #    if st.button("🔄 Reset Game", key="reset_game"):
+    #        st.session_state.quarter = 1
+    #        st.session_state.max_quarters = 4
+    #        st.session_state.stats = []
+    #        st.session_state.starters = []
+    #        st.session_state.players = []
+    #        st.session_state.clock_running = False
+    #        st.session_state.elapsed = 0
+    #        st.session_state.start_time = None
+    #        st.session_state.pending_action = None
+    #        st.session_state.previous_quarter = None
+    #        st.session_state.previous_elapsed = 0
+    #        st.rerun()
 
         # --- End Quarter Button ---
-    with q_col3:
-        if st.button("🏁 End Quarter", key="end_quarter"):
-            # Get current time from game clock
-            current_time = st.session_state.get("current_game_time", "00:00")
-            current_quarter = f"Q{st.session_state.quarter}"
-
-            # Log the "END" action
-            st.session_state.stats.append(["NA", "END", current_time, current_quarter])
-            st.success(f"✅ Logged quarter end: {current_quarter} at {current_time}")
-
-            # Pause clock for consistency
-            if st.session_state.clock_running:
-                st.session_state.elapsed += time.time() - st.session_state.start_time
-                st.session_state.clock_running = False
-
-            st.rerun()
+    
 
 
 
