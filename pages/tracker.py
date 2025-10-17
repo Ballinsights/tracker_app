@@ -420,7 +420,7 @@ with col_quarter:
                 current_quarter = f"Q{st.session_state.quarter}"
 
                 # Log the "END" action
-                st.session_state.stats.append(["NA", "END", current_time, current_quarter])
+                st.session_state.stats.append([12345, "END", current_time, current_quarter])
                 st.success(f"✅ Logged quarter end: {current_quarter} at {current_time}")
 
                 # Pause clock for consistency
