@@ -526,25 +526,101 @@ with col_actions:
 
 
 # --- Logged Stats (Right Side Panel) ---
+from streamlit.components.v1 import html
+import pandas as pd
+import os
+
 with col_stats:
     st.markdown("<h3 style='margin-top:0;'>📊 Logged Stats</h3>", unsafe_allow_html=True)
 
     if st.session_state.stats:
         df = pd.DataFrame(st.session_state.stats, columns=["Player", "Action", "Time", "Quarter"])
-        st.dataframe(df, use_container_width=True, height=400)
 
-        # Undo + Download side-by-side
+        # --- Create an HTML table with auto-scroll container ---
+        table_html = df.to_html(index=False, classes="stats-table")
+
+        html(f"""
+        <style>
+        .stats-container {{
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 8px;
+            background-color: #fff;
+        }}
+        .stats-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-family: monospace;
+            font-size: 14px;
+        }}
+        .stats-table th {{
+            position: sticky;
+            top: 0;
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #999;
+            text-align: left;
+            padding: 6px;
+        }}
+        .stats-table td {{
+            padding: 4px 6px;
+            border-bottom: 1px solid #eee;
+        }}
+        .stats-table tr:last-child {{
+            animation: flash 1s ease-out;
+        }}
+        @keyframes flash {{
+            from {{ background-color: #ffff99; }}
+            to {{ background-color: transparent; }}
+        }}
+        </style>
+
+        <!-- preload scroll position using inline JS before paint -->
+        <div id="scroll-container" class="stats-container"
+            onscroll="sessionStorage.setItem('scrollPos', this.scrollTop)">
+            {table_html}
+        </div>
+
+        <script>
+        (() => {{
+            const container = document.getElementById('scroll-container');
+            if (!container) return;
+
+            // read stored scroll position before first paint
+            const saved = sessionStorage.getItem('scrollPos');
+            if (saved !== null) {{
+                container.scrollTop = parseFloat(saved);
+            }}
+
+            // decide if user was near bottom (within 80px)
+            const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+
+            // slight delay to ensure full height known, then adjust
+            requestAnimationFrame(() => {{
+                if (nearBottom) {{
+                    container.scrollTop = container.scrollHeight;
+                }}
+            }});
+        }})();
+        </script>
+        """, height=430)
+
+        # --- Undo + Export buttons ---
         undo_col, dl_col = st.columns(2, gap="small")
+
         with undo_col:
             if st.button("↩️ Undo"):
                 st.session_state.stats.pop()
                 st.rerun()
+
         with dl_col:
             team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
 
             if st.button("💾 Export CSV to Local Folder"):
                 raw_data_path = "../data_preprocessing/raw_data"
-                gameids = [f for f in os.listdir(raw_data_path) if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
+                gameids = [f for f in os.listdir(raw_data_path)
+                           if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
                 gameids = [int(f) for f in gameids]
 
                 if gameids:
@@ -552,13 +628,12 @@ with col_stats:
                     latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
 
                     # Count how many team folders exist inside latest game id
-                    team_folders = [f for f in os.listdir(latest_game_dir) if os.path.isdir(os.path.join(latest_game_dir, f))]
+                    team_folders = [f for f in os.listdir(latest_game_dir)
+                                    if os.path.isdir(os.path.join(latest_game_dir, f))]
 
                     if len(team_folders) >= 2:
-                        # both teams already exported, increment
                         gameid = latest_gameid + 1
                     else:
-                        # still one or zero team folders, reuse same game id
                         gameid = latest_gameid
                 else:
                     gameid = 1
@@ -572,7 +647,5 @@ with col_stats:
 
                 st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
 
-
     else:
         st.info("No stats logged yet.")
-
