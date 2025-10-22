@@ -151,6 +151,8 @@ if st.session_state.pending_action:
 
 MAX_COLS = 10
 
+# 🔹 NEW: Always keep bench sorted before displaying
+st.session_state.players.sort()
 
 for row_start in range(0, len(st.session_state.players), MAX_COLS):
     row_players = st.session_state.players[row_start:row_start+MAX_COLS]
@@ -162,7 +164,13 @@ for row_start in range(0, len(st.session_state.players), MAX_COLS):
                     st.session_state.starters.append(p)
                     st.session_state.players.remove(p)
                     st.session_state.stats.append([p, "SUB_IN", "0:00", f"Q{st.session_state.quarter}"])
+
+                    # 🔹 NEW: Keep both lists sorted after substitution
+                    st.session_state.starters.sort()
+                    st.session_state.players.sort()
+
                     st.rerun()
+
 
 import streamlit as st
 import time
@@ -473,6 +481,9 @@ with col_players:
     if "selected_player" not in st.session_state:
         st.session_state.selected_player = None
 
+    # 🔹 NEW: Always show starters in ascending order
+    st.session_state.starters.sort()
+
     for player in st.session_state.starters:
         is_selected = (st.session_state.selected_player == player)
         button_label = f"Player {player}"
@@ -511,8 +522,14 @@ with col_actions:
                                 st.session_state.stats.append(
                                     [player, "SUB_OUT", current_game_time, f"Q{st.session_state.quarter}"]
                                 )
+
+                                # 🔹 NEW: Keep order consistent after substitution
+                                st.session_state.players.sort()
+                                st.session_state.starters.sort()
+
                                 st.session_state.selected_player = None
                                 st.rerun()
+
                             elif action in ["2PT", "3PT", "Miss2", "Miss3"]:
                                 st.session_state.pending_action = (player, action, current_game_time)
                                 st.rerun()
