@@ -5,6 +5,13 @@ from streamlit_autorefresh import st_autorefresh
 import os
 
 
+# --- Helper function to ensure numeric sorting ---
+def sort_players():
+    """Ensure players and starters stay numerically sorted."""
+    st.session_state.players = sorted([int(p) for p in st.session_state.players])
+    st.session_state.starters = sorted([int(p) for p in st.session_state.starters])
+
+
 # --- Require setup before access ---
 if "setup_done" not in st.session_state or not st.session_state.setup_done:
     st.warning("⚠️ Please set up the roster first on the Home page.")
@@ -83,7 +90,7 @@ zones_3pt = [
 if "starters" not in st.session_state:
     st.session_state.starters = []
 if "players" not in st.session_state:
-    st.session_state.players = [23,33,24,75,11,5,84,44,8,31,17]
+    st.session_state.players = []
 if "stats" not in st.session_state:
     st.session_state.stats = []
 if "pending_action" not in st.session_state:
@@ -98,6 +105,10 @@ if "start_time" not in st.session_state:
     st.session_state.start_time = None
 if "elapsed" not in st.session_state:
     st.session_state.elapsed = 0
+
+# 🔹 Keep player order sorted initially
+sort_players()
+
 
 
 # --- CHECK IF ZONE SELECTION IS PENDING ---
@@ -152,7 +163,9 @@ if st.session_state.pending_action:
 MAX_COLS = 10
 
 # 🔹 NEW: Always keep bench sorted before displaying
-st.session_state.players.sort()
+
+sort_players()
+
 
 for row_start in range(0, len(st.session_state.players), MAX_COLS):
     row_players = st.session_state.players[row_start:row_start+MAX_COLS]
@@ -166,8 +179,7 @@ for row_start in range(0, len(st.session_state.players), MAX_COLS):
                     st.session_state.stats.append([p, "SUB_IN", "0:00", f"Q{st.session_state.quarter}"])
 
                     # 🔹 NEW: Keep both lists sorted after substitution
-                    st.session_state.starters.sort()
-                    st.session_state.players.sort()
+                    sort_players()
 
                     st.rerun()
 
@@ -482,7 +494,7 @@ with col_players:
         st.session_state.selected_player = None
 
     # 🔹 NEW: Always show starters in ascending order
-    st.session_state.starters.sort()
+    sort_players()
 
     for player in st.session_state.starters:
         is_selected = (st.session_state.selected_player == player)
@@ -496,7 +508,7 @@ with col_players:
 
 # --- Actions for Selected Player ---
 with col_actions:
-    if st.session_state.selected_player:
+    if st.session_state.selected_player is not None:
         player = st.session_state.selected_player
         st.subheader(f"Actions for Player {player}")
 
@@ -524,8 +536,7 @@ with col_actions:
                                 )
 
                                 # 🔹 NEW: Keep order consistent after substitution
-                                st.session_state.players.sort()
-                                st.session_state.starters.sort()
+                                sort_players()
 
                                 st.session_state.selected_player = None
                                 st.rerun()
