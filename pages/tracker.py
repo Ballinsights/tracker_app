@@ -387,12 +387,12 @@ with colA:
     #        st.session_state.clock_running = False
      #   st.rerun()
 
-#with colC:
- #   if st.button("Reset", key="reset"):
-  #      st.session_state.clock_running = False
-   #     st.session_state.elapsed = 0
-    #    st.session_state.start_time = None
-     #   st.rerun()
+with colC:
+    if st.button("Reset", key="reset"):
+        st.session_state.clock_running = False
+        st.session_state.elapsed = 0
+        st.session_state.start_time = None
+        st.rerun()
 
 
 with col_quarter:
