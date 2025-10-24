@@ -25,8 +25,7 @@ team_name = st.session_state.get("team_name", "Unnamed Team")
 # --- Wide layout + big buttons CSS ---
 st.markdown("""
     <style>
-    
-    
+      
     .main .block-container {
         max-width: 100% !important;
         padding-left: 1rem;
@@ -355,7 +354,7 @@ with col_timer:
     updateClock();
     if (running) timer = setInterval(updateClock, 1000);
     </script>
-    """, height=100, width=800)
+    """, height=100, width=1000)
 
     colA, colB, colC = st.columns([0.45,0.45,1.5], gap="small")
 
