@@ -288,7 +288,7 @@ with col_timer:
     <div style="display:flex; align-items:center; gap:20px;">
     <div id="clock">⏱ {minutes:02d}:{seconds:02d}</div>
     <div id="score" style="
-        font-size: 50px;
+        font-size: 30px;
         font-weight: bold;
         padding: 8px 16px;
         border-radius: 10px;
