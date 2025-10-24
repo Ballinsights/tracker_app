@@ -176,7 +176,9 @@ for row_start in range(0, len(st.session_state.players), MAX_COLS):
                 if len(st.session_state.starters) < 5:
                     st.session_state.starters.append(p)
                     st.session_state.players.remove(p)
-                    st.session_state.stats.append([p, "SUB_IN", "0:00", f"Q{st.session_state.quarter}"])
+                    current_time = st.session_state.get("current_game_time", "00:00")
+                    st.session_state.stats.append([p, "SUB_IN", current_time, f"Q{st.session_state.quarter}"])
+
 
                     # 🔹 NEW: Keep both lists sorted after substitution
                     sort_players()
