@@ -658,45 +658,67 @@ with col_stats:
         """, height=430)
 
         # --- Undo + Export buttons ---
-        undo_col, dl_col = st.columns(2, gap="small")
+        with st.container():
+            undo_col, dl_col = st.columns(2, gap="small")
 
-        with undo_col:
-            if st.button("↩️ Undo"):
-                st.session_state.stats.pop()
-                st.rerun()
+            with undo_col:
+                if st.button("↩️ Undo"):
+                    if st.session_state.stats:
+                        last_action = st.session_state.stats.pop()
+                        player, action, _, _ = last_action
 
-        with dl_col:
-            team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
+                        # --- If undoing a substitution ---
+                        if action == "SUB_OUT":
+                            # Move player back to starters
+                            if player not in st.session_state.starters:
+                                st.session_state.starters.append(player)
+                            if player in st.session_state.players:
+                                st.session_state.players.remove(player)
 
-            if st.button("💾 Export CSV to Local Folder"):
-                raw_data_path = "../data_preprocessing/raw_data"
-                gameids = [f for f in os.listdir(raw_data_path)
-                           if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
-                gameids = [int(f) for f in gameids]
+                        elif action == "SUB_IN":
+                            # Move player back to bench
+                            if player not in st.session_state.players:
+                                st.session_state.players.append(player)
+                            if player in st.session_state.starters:
+                                st.session_state.starters.remove(player)
 
-                if gameids:
-                    latest_gameid = max(gameids)
-                    latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
+                        # Keep lists sorted again
+                        sort_players()
+                        st.rerun()
 
-                    # Count how many team folders exist inside latest game id
-                    team_folders = [f for f in os.listdir(latest_game_dir)
-                                    if os.path.isdir(os.path.join(latest_game_dir, f))]
 
-                    if len(team_folders) >= 2:
-                        gameid = latest_gameid + 1
+            with dl_col:
+                team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
+
+                if st.button("💾 Export CSV to Local Folder"):
+                    raw_data_path = "../data_preprocessing/raw_data"
+                    gameids = [f for f in os.listdir(raw_data_path)
+                            if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
+                    gameids = [int(f) for f in gameids]
+
+                    if gameids:
+                        latest_gameid = max(gameids)
+                        latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
+
+                        # Count how many team folders exist inside latest game id
+                        team_folders = [f for f in os.listdir(latest_game_dir)
+                                        if os.path.isdir(os.path.join(latest_game_dir, f))]
+
+                        if len(team_folders) >= 2:
+                            gameid = latest_gameid + 1
+                        else:
+                            gameid = latest_gameid
                     else:
-                        gameid = latest_gameid
-                else:
-                    gameid = 1
+                        gameid = 1
 
-                gameid = f"{gameid:03d}"
-                export_dir = f"{raw_data_path}/{gameid}/{team_name}"
-                os.makedirs(export_dir, exist_ok=True)
+                    gameid = f"{gameid:03d}"
+                    export_dir = f"{raw_data_path}/{gameid}/{team_name}"
+                    os.makedirs(export_dir, exist_ok=True)
 
-                file_path = os.path.join(export_dir, "game_stats.csv")
-                df.to_csv(file_path, index=False, encoding="utf-8")
+                    file_path = os.path.join(export_dir, "game_stats.csv")
+                    df.to_csv(file_path, index=False, encoding="utf-8")
 
-                st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
+                    st.success(f"✅ CSV exported successfully to: `{os.path.abspath(file_path)}`")
 
     else:
         st.info("No stats logged yet.")
