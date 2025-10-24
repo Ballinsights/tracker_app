@@ -246,6 +246,14 @@ if "stats" in st.session_state and st.session_state.stats:
 else:
     total_score = 0
 
+# --- Calculate total team fouls ---
+if "stats" in st.session_state and st.session_state.stats:
+    df = pd.DataFrame(st.session_state.stats, columns=["Player", "Action", "Time", "Quarter"])
+    total_fouls = len(df[df["Action"] == "Foul"])
+else:
+    total_fouls = 0
+
+
 
 # === TIMER + QUARTER SIDE BY SIDE ===
 col_timer, col_quarter = st.columns([2, 1])
@@ -287,6 +295,7 @@ with col_timer:
         border-radius: 10px;
     ">
         Score: {total_score}
+        fouls: {total_fouls}
     </div>
 </div>
 
@@ -346,7 +355,7 @@ with col_timer:
     updateClock();
     if (running) timer = setInterval(updateClock, 1000);
     </script>
-    """, height=100, width=600)
+    """, height=100, width=800)
 
     colA, colB, colC = st.columns([0.45,0.45,1.5], gap="small")
 
