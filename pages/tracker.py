@@ -133,9 +133,16 @@ if st.session_state.pending_action:
     else:
         zone_list = []
 
-    col_left, col_mid, col_right = st.columns([1,1,1])
+    
 
+    # Create main row of columns
+    col_left, col_mid, col_right = st.columns([1, 1, 1])
+
+    # Render top row (corner + wing 3s)
     for zone in zone_list:
+        if zone == "Top of the Arc 3":
+            continue  # skip for now, will render later
+
         if "Left" in zone:
             col = col_left
         elif "Right" in zone:
@@ -150,9 +157,23 @@ if st.session_state.pending_action:
             st.session_state.pending_action = None
             st.rerun()
 
+    # Render “Top of the Arc 3” in its own centered row below
+    if "Top of the Arc 3" in zone_list:
+        st.write("")  # spacing
+        bottom_col = st.columns([1, 1, 1])[1]  # center column
+        if bottom_col.button("Top of the Arc 3", key=f"zone-{player}-TopArc3"):
+            st.session_state.stats.append(
+                [player, f"{action} (Top of the Arc 3)", act_time, f"Q{st.session_state.quarter}"]
+            )
+            st.session_state.pending_action = None
+            st.rerun()
+
+    # === Cancel button below all zones ===
+    st.write("")  # spacing
     if st.button("❌ Cancel"):
         st.session_state.pending_action = None
         st.rerun()
+
 
     st.stop()
 
@@ -349,19 +370,19 @@ with colA:
             st.session_state.start_time = time.time()
         st.rerun()
 
-with colB:
-    if st.button("Pause", key="pause"):
-        if st.session_state.clock_running:
-            st.session_state.elapsed += time.time() - st.session_state.start_time
-            st.session_state.clock_running = False
-        st.rerun()
+#with colB:
+ #   if st.button("Pause", key="pause"):
+  #      if st.session_state.clock_running:
+   #         st.session_state.elapsed += time.time() - st.session_state.start_time
+    #        st.session_state.clock_running = False
+     #   st.rerun()
 
-with colC:
-    if st.button("Reset", key="reset"):
-        st.session_state.clock_running = False
-        st.session_state.elapsed = 0
-        st.session_state.start_time = None
-        st.rerun()
+#with colC:
+ #   if st.button("Reset", key="reset"):
+  #      st.session_state.clock_running = False
+   #     st.session_state.elapsed = 0
+    #    st.session_state.start_time = None
+     #   st.rerun()
 
 
 with col_quarter:
