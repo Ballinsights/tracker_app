@@ -21,30 +21,6 @@ if "setup_done" not in st.session_state or not st.session_state.setup_done:
 team_name = st.session_state.get("team_name", "Unnamed Team")
 
 
-raw_data_path = "../data_preprocessing/raw_data"
-gameids = [f for f in os.listdir(raw_data_path)
-        if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
-gameids = [int(f) for f in gameids]
-
-if gameids:
-    latest_gameid = max(gameids)
-    latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
-
-    # Count how many team folders exist inside latest game id
-    team_folders = [f for f in os.listdir(latest_game_dir)
-                    if os.path.isdir(os.path.join(latest_game_dir, f))]
-
-    if len(team_folders) >= 2:
-        gameid = latest_gameid + 1
-    else:
-        gameid = latest_gameid
-else:
-    gameid = 1
-
-gameid = f"{gameid:03d}"
-export_dir = f"{raw_data_path}/{gameid}/{team_name}"
-os.makedirs(export_dir, exist_ok=True)
-
 
 # --- Wide layout + big buttons CSS ---
 st.markdown("""
@@ -723,6 +699,32 @@ with col_stats:
                 team_name = st.session_state.get("team_name", "Unnamed_Team").replace(" ", "_")
 
                 if st.button("💾 Export CSV to Local Folder"):
+
+                    raw_data_path = "../data_preprocessing/raw_data"
+                    gameids = [f for f in os.listdir(raw_data_path)
+                            if os.path.isdir(os.path.join(raw_data_path, f)) and f.isdigit()]
+                    gameids = [int(f) for f in gameids]
+
+                    if gameids:
+                        latest_gameid = max(gameids)
+                        latest_game_dir = os.path.join(raw_data_path, f"{latest_gameid:03d}")
+
+                        # Count how many team folders exist inside latest game id
+                        team_folders = [f for f in os.listdir(latest_game_dir)
+                                        if os.path.isdir(os.path.join(latest_game_dir, f))]
+
+                        if len(team_folders) >= 2:
+                            gameid = latest_gameid + 1
+                        else:
+                            gameid = latest_gameid
+                    else:
+                        gameid = 1
+
+                    gameid = f"{gameid:03d}"
+                    export_dir = f"{raw_data_path}/{gameid}/{team_name}"
+                    st.session_state.export_dir = export_dir
+
+                    os.makedirs(export_dir, exist_ok=True)
                     
 
                     file_path = os.path.join(export_dir, "game_stats.csv")
@@ -760,7 +762,14 @@ if st.button("💾 Save Quarter Length"):
     roster.append({"number":"Team Name", "name":team_name})
     roster = pd.DataFrame(st.session_state.roster)
 
+    if "export_dir" in st.session_state:
+        export_dir = st.session_state.export_dir
+    else:
+        st.warning("⚠️ Please export game stats first before saving quarter info.")
+        st.stop()
+
     file_path = os.path.join(export_dir, "game_info.csv")
+
     roster.to_csv(file_path, index=False, encoding="utf-8")
 
     st.success(f"✅ Quarter length saved as {quarter_length} minutes per quarter.")
